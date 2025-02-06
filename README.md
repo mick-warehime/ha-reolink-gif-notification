@@ -32,8 +32,9 @@ shell_command:
   create_gif: /bin/bash /config/scripts/create_mp4.sh "{{ arguments }}"
 ```
 
-3. Add this blueprint as a new blueprint
+3. Add this blueprint as a new blueprint (not sure how to get this working as a custom repo/import blueprint)
 
-a. Use HACS to add a custom repository, or
+Create a new directory in /blueprints/ and add the ha_reolink_video_notifications.yaml file 
 
-b. Copy this file to the blueprints directory
+
+4. Add new a new automation and select the blueprint
