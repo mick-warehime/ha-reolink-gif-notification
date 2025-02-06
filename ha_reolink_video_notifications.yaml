@@ -1,9 +1,9 @@
 blueprint:
-  name: Reolink Rich Notifications
+  name: Reolink Video Notifications
   description: >
-    Send Reolink rich notifications to an Android device.
+    Send Reolink video notifications to an Android device.
 
-    Documentation: https://github.com/jterrace/ha-reolink-rich-notifications
+    Documentation: https://github.com/mick-warehime/ha-reolink-gif-notifications
 
   domain: automation
   input:
@@ -32,9 +32,28 @@ blueprint:
       default:
         hours: 0
         minutes: 0
-        seconds: 20
+        seconds: 30
       selector:
         duration:
+
+    number_of_photos:
+      name: Number of photos
+      description: Number of photos to use to create video notification.
+      default: 10
+      selector:
+        number:
+          min: 1
+          max: 20
+
+    delay_between_photos:
+      name: Delay between photos (milliseconds)
+      description: Delay between subsequent photos used to create video.
+      default: 500
+      selector:
+        number:
+          min: 100
+          max: 2000
+          step: 100
 
 mode: parallel
 max: 100
@@ -43,6 +62,8 @@ variables:
   notify_device: !input notify_device
   trigger_entities: !input trigger_entities
   retrigger_delay: !input retrigger_delay
+  number_of_photos: !input number_of_photos
+  delay_between_photos: !input delay_between_photos
 
 trigger:
   platform: state
@@ -58,9 +79,10 @@ action:
         (camera_entities | select('match', '.*_snapshots_fluent$') | first) or
         (camera_entities | select('match', '.*_snapshots_clear$') | first) or
         (camera_entities | select('match', '.*_fluent$') | first) or
+        (camera_entities | select('match', '.*_fluent$') | first) or
         (camera_entities | first)
         }}
-      image_file: "reolink_rich_notifications/{{ camera_to_snapshot }}_{{ trigger.to_state.last_updated | as_timestamp | timestamp_custom('%M-%S') }}.jpg"
+      image_file_base: "reolink_rich_notifications/{{ camera_to_snapshot }}_{{ trigger.to_state.last_updated | as_timestamp | timestamp_custom('%Y-%m-%d_%H:%M:%S') }}"
       should_skip_notification: >
         {%
           set other_sensor_times =
@@ -95,24 +117,34 @@ action:
               url: "app://com.mcu.reolink"
               clickAction: "app://com.mcu.reolink"
 
-  # Create camera snapshot
-  - service: camera.snapshot
-    data_template:
-      entity_id: "{{ camera_to_snapshot }}"
-      filename: "/media/{{ image_file }}"
+  # Take a series of photos.
+  - repeat:
+      count: "{{number_of_photos | int}}"
+      sequence:
+        - service: camera.snapshot
+          data_template:
+            entity_id: "{{ camera_to_snapshot }}"
+            filename: "/media/{{ image_file_base }}_{{ '%02d' | format(repeat.index | int) | string }}.jpg"
+        - delay:
+            milliseconds: "{{delay_between_photos | int}}"
 
-  # Re-send notification with image data.
+  # Convert photos to video.
+  - service: shell_command.create_mp4
+    data_template:
+      arguments: "/media/{{ image_file_base }}_"
+
+  # Send notification to every device with the video attached.
   - repeat:
       for_each: "{{ notify_device }}"
       sequence:
-        - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+        - service: notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}
           data:
             title: "{{ trigger.from_state.attributes.friendly_name }}"
             message: ""
             data:
               tag: "{{ trigger.to_state.context.id }}"
-              image: "/media/local/{{ image_file }}"
+              video: /media/local/{{ image_file_base }}_.mp4
               ttl: 0
               priority: high
-              url: "app://com.mcu.reolink"
-              clickAction: "app://com.mcu.reolink"
+              url: app://com.mcu.reolink
+              clickAction: app://com.mcu.reolink

@@ -1,34 +1,32 @@
-# Reolink Rich Notifications for Home Assistant
+# Reolink Video Notifications for Home Assistant
 
-This blueprint can be used to send notifications to your mobile device when your Reolink camera
-detects activity.
+Forked from https://github.com/jterrace/ha-reolink-rich-notifications
 
-Multiple mobile phones are supported. Only Android is currently supported, but iOS could be added
-fairly easily. I don't have a way to test it, so if you are interested in implementing it, please
-send a pull request.
 
-The [Reolink Home Assistant integration](https://www.home-assistant.io/integrations/reolink/) is
-required.
+1. Install ffmpeg
 
-The list of sensors (e.g. Motion, Vehicle, Person, Animal) that should trigger an alert can be
-configured. The camera of the device the sensor belongs to is automatically determined for taking
-a snapshot when an alert is triggered.
+I tried doing this with various add-ons but ended up launching the terminal add-on and just installing with `apk`.
 
-If you tap on a notification, the Reolink app is opened.
+```
+apk update
 
-When a sensor is triggered, the automation first sends a notification with no image. Then it takes
-a snapshot and updates the notification with the image. This makes it so notifications are much
-faster if there's a delay in your phone receiving the image, particularly useful on slow
-connections.
+apk add ffmpeg
+```
 
-To avoid redundant notifications (e.g. receiving Motion + Person at the same time) there is a
-configuration setting to skip notifications if the same camera has already triggered a notification
-within a short time period (20 seconds by default).
+2. Teach HA to convert a set of images to a video 
 
-Snapshots are saved in the `/media/reolink_rich_notifications/` directory of home assistant. Due
-to limitations of home assistant automations, screenshots are not cleaned up and will accumulate
-in the media directory over time. To limit growth, snapshots are named using a combination of the
-camera name, current minute, and current hour. So the maximum number of files is 3600 multiplied by
-the number of cameras you have triggering notifications.
+The Studio Code Server add-on is very nice for these steps [link](https://community.home-assistant.io/t/home-assistant-community-add-on-visual-studio-code/107863)
 
-- Originally forked from https://gist.github.com/McDAlexander/56eb3f2e421e283460b3d641fd002ea8
+2a. Create a new directory /config/scripts/
+2b. Copy the create_mp4.sh file to this new directory 
+2c. Add the following line to configuration.yaml
+
+```
+shell_command:
+  create_gif: /bin/bash /config/scripts/create_mp4.sh "{{ arguments }}"
+```
+
+3. Add this blueprint as a new blueprint
+
+a. Use HACS to add a custom repository, or
+b. Copy this file to the blueprints directory
