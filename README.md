@@ -19,7 +19,11 @@ The Studio Code Server add-on is very nice for these steps [link](https://commun
 
 2a. Create a new directory /config/scripts/
 
-2b. Copy the create_mp4.sh file to this new directory 
+2b. Copy the following contents into a new file called create_mp4.sh in the new directory
+
+```
+ffmpeg -f image2 -framerate 2 -i "$1%02d.jpg"  -c:v libx264 -pix_fmt yuv420p "$1.mp4"
+``` 
 
 2c. Add the following line to configuration.yaml
 

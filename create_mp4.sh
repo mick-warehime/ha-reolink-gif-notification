@@ -1,1 +1,0 @@
-ffmpeg -f image2 -framerate 2 -i "$1%02d.jpg"  -c:v libx264 -pix_fmt yuv420p "$1.mp4"
