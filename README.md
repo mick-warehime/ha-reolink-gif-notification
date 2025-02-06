@@ -31,4 +31,5 @@ shell_command:
 3. Add this blueprint as a new blueprint
 
 a. Use HACS to add a custom repository, or
+
 b. Copy this file to the blueprints directory
