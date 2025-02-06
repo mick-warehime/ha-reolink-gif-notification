@@ -18,7 +18,9 @@ apk add ffmpeg
 The Studio Code Server add-on is very nice for these steps [link](https://community.home-assistant.io/t/home-assistant-community-add-on-visual-studio-code/107863)
 
 2a. Create a new directory /config/scripts/
+
 2b. Copy the create_mp4.sh file to this new directory 
+
 2c. Add the following line to configuration.yaml
 
 ```
