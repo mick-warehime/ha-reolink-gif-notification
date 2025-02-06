@@ -1,8 +1,10 @@
 blueprint:
   name: Reolink Video Notifications
-  description: |
+  description: >
     Send Reolink video notifications to an Android device.
+
     Documentation: https://github.com/mick-warehime/ha-reolink-gif-notification
+  
   domain: automation
   input:
     notify_device:
@@ -14,6 +16,7 @@ blueprint:
         device:
           integration: mobile_app
           multiple: true
+
     trigger_entities:
       name: Trigger Sensors
       description: These Reolink sensors will be monitored to determine when to send
@@ -24,6 +27,7 @@ blueprint:
           filter:
             - integration: reolink
               domain: binary_sensor
+
     retrigger_delay:
       name: Retrigger Delay
       description: Time to wait before triggering the same camera again.
@@ -33,6 +37,7 @@ blueprint:
         seconds: 30
       selector:
         duration: null
+
     number_of_photos:
       name: Number of photos
       description: Number of photos to use to create video notification.
@@ -41,6 +46,7 @@ blueprint:
         number:
           min: 1
           max: 20
+
     delay_between_photos:
       name: Delay between photos (milliseconds)
       description: Delay between subsequent photos used to create video.
@@ -50,19 +56,23 @@ blueprint:
           min: 100
           max: 2000
           step: 100
+
 mode: parallel
 max: 100
+
 variables:
   notify_device: notify_device
   trigger_entities: trigger_entities
   retrigger_delay: retrigger_delay
   number_of_photos: number_of_photos
   delay_between_photos: delay_between_photos
+
 trigger:
   platform: state
   entity_id: trigger_entities
   from: off
   to: on
+
 action:
   - variables:
       camera_entities: "{{ device_entities(device_id(trigger.entity_id)) |
@@ -88,11 +98,13 @@ action:
             + [trigger.from_state.last_updated]
         %} {{ trigger.to_state.last_updated - other_sensor_times|max <
         timedelta(**retrigger_delay) }}
+  
   - if:
       - condition: template
         value_template: "{{ should_skip_notification }}"
     then:
       - stop: Skipping notification for being too soon.
+  
   - repeat:
       for_each: "{{ notify_device }}"
       sequence:
@@ -106,6 +118,7 @@ action:
               priority: high
               url: app://com.mcu.reolink
               clickAction: app://com.mcu.reolink
+  
   - repeat:
       count: "{{number_of_photos | int}}"
       sequence:
@@ -116,9 +129,11 @@ action:
               string }}.jpg
         - delay:
             milliseconds: "{{delay_between_photos | int}}"
+  
   - service: shell_command.create_mp4
     data_template:
       arguments: /media/{{ image_file_base }}_
+  
   - repeat:
       for_each: "{{ notify_device }}"
       sequence:
