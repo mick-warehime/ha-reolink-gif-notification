@@ -3,7 +3,7 @@ blueprint:
   description: >
     Send Reolink video notifications to an Android device.
 
-    Documentation: https://github.com/mick-warehime/ha-reolink-gif-notifications
+    Documentation: https://github.com/mick-warehime/ha-reolink-gif-notification
 
   domain: automation
   input:
