@@ -78,11 +78,11 @@ action:
       camera_entities: "{{ device_entities(device_id(trigger.entity_id)) |
         select('match', '^camera\\.') | list }}"
       camera_to_snapshot: >
-        {{ (camera_entities | select('match', '.*_snapshots_fluent$') | first)
-        or (camera_entities | select('match', '.*_snapshots_clear$') | first) or
-        (camera_entities | select('match', '.*_fluent$') | first) or
-        (camera_entities | select('match', '.*_fluent$') | first) or
-        (camera_entities | first) }}
+        {{ (camera_entities | select('match', '.*_snapshots_fluent$') | first) or
+           (camera_entities | select('match', '.*_snapshots_clear$') | first) or
+           (camera_entities | select('match', '.*_fluent$') | first) or
+           (camera_entities | first) }}
+           
       image_file_base: reolink_rich_notifications/{{ camera_to_snapshot }}_{{
         trigger.to_state.last_updated | as_timestamp |
         timestamp_custom('%Y-%m-%d_%H:%M:%S') }}
